@@ -19,11 +19,15 @@ import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.philliphsu.bottomsheetpickers.time.BottomSheetTimePickerDialog;
+import com.philliphsu.bottomsheetpickers.time.numberpad.NumberPadTimePickerDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,6 +120,13 @@ public class MainActivity extends AppCompatActivity {
                     showStartTimePickerDialog();
                     break;
                 case R.id.btnMoveContactsActivity:
+                    NumberPadTimePickerDialog pad = NumberPadTimePickerDialog.newInstance(new BottomSheetTimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(ViewGroup viewGroup, int hourOfDay, int minute) {
+
+                        }
+                    }, false);
+                    pad.show(getSupportFragmentManager(),"T");
                     break;
                 case R.id.btnUpdate:
                     successSettingUpdateTime();
@@ -131,7 +142,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showStartTimePickerDialog(){
         mGetTime = new GetTime();
-        dialog = new TimePickerDialog(mContext, THEME_TRADITIONAL,startTimePickerlistener, mGetTime.getCurrentTime(), mGetTime.getCurrentMinute(), false);
+//        dialog = new TimePickerDialog(mContext, THEME_TRADITIONAL,startTimePickerlistener, mGetTime.getCurrentTime(), mGetTime.getCurrentMinute(), false);
+
         dialog.setMessage("무음설정 - 시작 시간");
         dialog.show();
 
