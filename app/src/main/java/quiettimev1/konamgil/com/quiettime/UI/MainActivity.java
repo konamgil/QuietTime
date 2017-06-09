@@ -2,6 +2,7 @@ package quiettimev1.konamgil.com.quiettime.UI;
 
 import android.Manifest;
 import android.app.AlarmManager;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -18,30 +19,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.philliphsu.bottomsheetpickers.time.BottomSheetTimePickerDialog;
-import com.philliphsu.bottomsheetpickers.time.numberpad.NumberPadTimePickerDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import quiettimev1.konamgil.com.quiettime.DB_Helper.ContactsAdapter;
 import quiettimev1.konamgil.com.quiettime.DB_Helper.PrefDataHelper;
 import quiettimev1.konamgil.com.quiettime.PhoneNumber.ContactsInfoDatas;
 import quiettimev1.konamgil.com.quiettime.PhoneNumber.ContactsInfoObject;
+import quiettimev1.konamgil.com.quiettime.PhoneNumber.TimeInfoObject;
 import quiettimev1.konamgil.com.quiettime.R;
 import quiettimev1.konamgil.com.quiettime.Service.AudioService;
 import quiettimev1.konamgil.com.quiettime.Util.GetTime;
-
-import static android.app.AlertDialog.THEME_DEVICE_DEFAULT_DARK;
-import static android.app.AlertDialog.THEME_HOLO_LIGHT;
-import static android.app.AlertDialog.THEME_TRADITIONAL;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,14 +56,25 @@ public class MainActivity extends AppCompatActivity {
     private TimePickerDialog dialog;
 
     //전역위젯
-    private TextView tvStartTime;
-    private TextView tvEndTime;
-
-    //시간 설정 데이터
-    private HashMap<String,Integer> setTimeMap;
+    private TextView tvStartHour;
+    private TextView tvStartMinute;
+    private TextView tvEndHour;
+    private TextView tvEndMinute;
 
     //프리퍼런스
     private PrefDataHelper mPrefDataHelper;
+
+    //타임정보 리스트
+    private ArrayList<TimeInfoObject> mTimeList;
+
+    //전화번호 인원 리스트
+    private ArrayList<ContactsInfoObject> mContactsInfoObjectArrayList;
+
+    //체크된 전화번호 리스트
+    private ArrayList<String> checkedNumberList;
+
+    //리스트 어댑터
+    private ContactsAdapter mContactsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,14 +88,37 @@ public class MainActivity extends AppCompatActivity {
         mContext = this;
         init(); // 위젯 초기화
         initWidget();
-//        ContactsInfoDatas a = new ContactsInfoDatas(mContext);
-//        ArrayList<ContactsInfoObject> B = a.getContacts();
+        allowMuteMode();
     }
 
-    public void init(){
-        setTimeMap= new HashMap<>();
-        mPrefDataHelper = new PrefDataHelper(mContext);
+    /**
+     * 방해금지 허용해야 볼륨조절 사용 가능
+     */
+    public void allowMuteMode(){
+        NotificationManager notificationManager =
+                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && !notificationManager.isNotificationPolicyAccessGranted()) {
+            Intent intent = new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+            Toast.makeText(mContext,"방해금지모드를 해제해주세요", Toast.LENGTH_SHORT).show();
+            startActivity(intent);
+        }
     }
+    /**
+     * 컬렉션 및 스토어 초기화
+     */
+    public void init(){
+        mContactsAdapter = new ContactsAdapter(mContext);
+        mPrefDataHelper = new PrefDataHelper(mContext);
+        mContactsInfoObjectArrayList = mContactsAdapter.getAllData();
+        mTimeList = new ArrayList<>();
+        checkedNumberList = new ArrayList<>();
+    }
+
+    /**
+     * 위젯 초기화
+     */
     public void initWidget(){
 
         //툴바 설정
@@ -93,21 +128,54 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
 
         //버튼 위젯 초기화
-        Button btnSetTime = (Button)findViewById(R.id.btnSetTime);
-        Button btnMoveContactsActivity = (Button)findViewById(R.id.btnMoveContactsActivity);
+        Button btnStartSetTime = (Button)findViewById(R.id.btnStartSetTime);
+        Button btnEndSetTime = (Button)findViewById(R.id.btnEndSetTime);
         Button btnUpdate = (Button)findViewById(R.id.btnUpdate);
 
         //버튼 리스너 연결
-        btnSetTime.setOnClickListener(mOnClickListener);
-        btnMoveContactsActivity.setOnClickListener(mOnClickListener);
+        btnStartSetTime.setOnClickListener(mOnClickListener);
+        btnEndSetTime.setOnClickListener(mOnClickListener);
         btnUpdate.setOnClickListener(mOnClickListener);
 
         //텍스트뷰 위젯 초기화
-        tvStartTime = (TextView)findViewById(R.id.tvStartTime);
-        tvEndTime = (TextView)findViewById(R.id.tvEndTime);
+        tvStartHour = (TextView)findViewById(R.id.tvStartHour);
+        tvStartMinute = (TextView)findViewById(R.id.tvStartMinute);
+        tvEndHour = (TextView)findViewById(R.id.tvEndHour);
+        tvEndMinute = (TextView)findViewById(R.id.tvEndMinute);
 
+        //리스트뷰
+        ListView listContacts = (ListView)findViewById(R.id.listContacts);
+
+        listContacts.setAdapter(mContactsAdapter);
+        listContacts.setOnItemClickListener(mOnItemClickListener);
+        listContacts.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
     }
 
+    /**
+     * 리스트 아이템 리스너
+     */
+    private ListView.OnItemClickListener mOnItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            mContactsAdapter.setCheckBox(position);
+        }
+    };
+
+    /**
+     * 체크된 사람의 전화번호 저장
+     */
+    public void checkedNumber(){
+        checkedNumberList.clear();
+        for (ContactsInfoObject object : mContactsInfoObjectArrayList){
+            if (object.isCheckbox()){
+                checkedNumberList.add(object.getTeleNumber());
+            }
+        }
+        mPrefDataHelper.insertCheckedNumberList(checkedNumberList);
+//        for(int i=0; i<checkedNumberList.size(); i++){
+//            Log.d("MAIN",checkedNumberList.get(i).toString());
+//        }
+    }
     /**
      *  버튼 리스너
      */
@@ -115,21 +183,15 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             switch (v.getId()){
-                case R.id.btnSetTime:
-                    showEndTimePickerDialog();
+                case R.id.btnStartSetTime:
                     showStartTimePickerDialog();
                     break;
-                case R.id.btnMoveContactsActivity:
-                    NumberPadTimePickerDialog pad = NumberPadTimePickerDialog.newInstance(new BottomSheetTimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(ViewGroup viewGroup, int hourOfDay, int minute) {
-
-                        }
-                    }, false);
-                    pad.show(getSupportFragmentManager(),"T");
+                case R.id.btnEndSetTime:
+                    showEndTimePickerDialog();
                     break;
                 case R.id.btnUpdate:
                     successSettingUpdateTime();
+                    checkedNumber();
                     break;
                 default:
                     break;
@@ -142,8 +204,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showStartTimePickerDialog(){
         mGetTime = new GetTime();
-//        dialog = new TimePickerDialog(mContext, THEME_TRADITIONAL,startTimePickerlistener, mGetTime.getCurrentTime(), mGetTime.getCurrentMinute(), false);
-
+        dialog = new TimePickerDialog(mContext, startTimePickerlistener, mGetTime.getCurrentTime(), mGetTime.getCurrentMinute(), false);
         dialog.setMessage("무음설정 - 시작 시간");
         dialog.show();
 
@@ -154,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showEndTimePickerDialog(){
         mGetTime = new GetTime();
-        dialog = new TimePickerDialog(mContext, endTimePickerlistener, mGetTime.getCurrentTime(), mGetTime.getCurrentMinute(), true);
+        dialog = new TimePickerDialog(mContext, endTimePickerlistener, mGetTime.getCurrentTime(), mGetTime.getCurrentMinute(), false);
         dialog.setMessage("무음설정 - 끝 시간");
         dialog.show();
     }
@@ -165,9 +226,10 @@ public class MainActivity extends AppCompatActivity {
     private TimePickerDialog.OnTimeSetListener startTimePickerlistener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            tvStartTime.setText(hourOfDay + "시 " + minute + "분");
-            setTimeMap.put("startHour",hourOfDay);
-            setTimeMap.put("startMinute",minute);
+            tvStartHour.setText(String.valueOf(hourOfDay));
+            tvStartMinute.setText(String.valueOf(minute));
+            int h = hourOfDay;
+            int m = minute;
             Toast.makeText(getApplicationContext(), hourOfDay + "시 " + minute + "분", Toast.LENGTH_SHORT).show();
         }
     };
@@ -178,25 +240,42 @@ public class MainActivity extends AppCompatActivity {
     private TimePickerDialog.OnTimeSetListener endTimePickerlistener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            tvEndTime.setText(hourOfDay + "시 " + minute + "분");
-            setTimeMap.put("endHour",hourOfDay);
-            setTimeMap.put("endMinute",minute);
+            tvEndHour.setText(String.valueOf(hourOfDay));
+            tvEndMinute.setText(String.valueOf(minute));
+            int h = hourOfDay;
+            int m = minute;
             Toast.makeText(getApplicationContext(), hourOfDay + "시 " + minute + "분", Toast.LENGTH_SHORT).show();
         }
     };
+
+
 
     /**
      * 완료 버튼 눌럿을때
      */
     private void successSettingUpdateTime(){
-        Intent intent = new Intent(mContext, AudioService.class);
-//        intent.putExtra("resultTimeMap",setTimeMap);
-        HashMap<String,Integer> resultSettingTime = mPrefDataHelper.selectMapInPref();
-        mPrefDataHelper.insertMapInPref(setTimeMap);
-        startService(intent);
+        try {
+            int startHour = Integer.parseInt(tvStartHour.getText().toString());
+            int startMinute = Integer.parseInt(tvStartMinute.getText().toString());
+            int endHour = Integer.parseInt(tvEndHour.getText().toString());
+            int endMinute = Integer.parseInt(tvEndMinute.getText().toString());
 
-        Toast.makeText(mContext,"완료",Toast.LENGTH_SHORT).show();
+            if (!mTimeList.isEmpty()) {
+                mTimeList.set(0, new TimeInfoObject(startHour, startMinute, endHour, endMinute));
+            } else {
+                mTimeList.add(0, new TimeInfoObject(startHour, startMinute, endHour, endMinute));
+            }
 
+            Log.d("AudioService", tvStartHour.getText().toString() + tvStartMinute.getText().toString() + tvEndHour.getText().toString() + tvEndMinute.getText().toString());
+            mPrefDataHelper.insertListInPref(mTimeList);
+
+            Intent intent = new Intent(mContext, AudioService.class);
+            startService(intent);
+
+            Toast.makeText(mContext, "완료", Toast.LENGTH_SHORT).show();
+        } catch (Exception e){
+            Toast.makeText(mContext, "시간을 입력해주세요", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -228,8 +307,4 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
     }
-
-
-
-
 }

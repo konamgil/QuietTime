@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import quiettimev1.konamgil.com.quiettime.DB_Helper.PrefDataHelper;
+
 /**
  * Created by konamgil on 2017-06-08.
  */
@@ -17,14 +19,27 @@ import java.util.Map;
 public class ContactsInfoDatas {
     private String TAG = getClass().getSimpleName();
     private ArrayList<ContactsInfoObject> mContacts;
+    private ArrayList<String> mCheckedNumber;
     private Context mContext;
     private ContentResolver cr;
+    private boolean isChecked;
+
+    //체크된 사람들 정보 가져오기위해서 프리퍼런스에서 가져온다
+    private PrefDataHelper mPrefDataHelper;
 
     public ContactsInfoDatas(Context mContext) {
         this.mContext = mContext;
+        mPrefDataHelper = new PrefDataHelper(mContext);
+        getCheckedNumberList();
         getContactsDatas(); //데이터 가져오기
     }
 
+    /**
+     * 체크된 번호 가져오기
+     */
+    private void getCheckedNumberList(){
+        mCheckedNumber = mPrefDataHelper.selectCheckedNumberList();
+    }
     /**
      * 전화번호부 목록 가져오기
      */
@@ -61,7 +76,15 @@ public class ContactsInfoDatas {
                 String mime = cursor.getString(mimePos);
 
                 if (mime.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
-                    tempContacts.put(count++, new ContactsInfoObject(name, numNo));
+                   Loop1 :  for(int i = 0; i<mCheckedNumber.size(); i++){
+                        if(numNo.equals(mCheckedNumber.get(i))){
+                            isChecked = true;
+                            break Loop1;
+                        } else {
+                            isChecked = false;
+                        }
+                    }
+                    tempContacts.put(count++, new ContactsInfoObject(name, numNo, isChecked));
                 }
             }
         } finally {

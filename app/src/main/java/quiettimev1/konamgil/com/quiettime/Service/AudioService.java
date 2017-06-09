@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.os.Build;
@@ -19,10 +20,16 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import quiettimev1.konamgil.com.quiettime.BroadcastReceiver.MainBroadcast;
 import quiettimev1.konamgil.com.quiettime.DB_Helper.PrefDataHelper;
+import quiettimev1.konamgil.com.quiettime.PhoneNumber.TimeInfoObject;
 import quiettimev1.konamgil.com.quiettime.R;
 import quiettimev1.konamgil.com.quiettime.Util.AudioSetting;
 import quiettimev1.konamgil.com.quiettime.Util.GetTime;
@@ -41,9 +48,7 @@ public class AudioService extends Service {
     private TelephonyManager mTelephonyManager;
     private AlarmManager mAlarmManager;
     private AudioSetting audio;
-    private Handler mHandler;
-    private HashMap<String,Integer> resultSettingTime;
-    private PrefDataHelper mPrefDataHelper;
+    public static boolean isServiceRunning = false;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -58,10 +63,12 @@ public class AudioService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        isServiceRunning = true;
+        PrefDataHelper mPrefDataHelper= new PrefDataHelper(getApplicationContext());
+        ArrayList<TimeInfoObject> resultTimeList = mPrefDataHelper.selectListInPref();
 
         mAlarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         audio = new AudioSetting(getApplicationContext());
-        mPrefDataHelper = new PrefDataHelper(getApplicationContext());
 
         startForeground(1,new Notification());
 
@@ -82,29 +89,38 @@ public class AudioService extends Service {
         nm.notify(startId, notification);
         nm.cancel(startId);
 
-//        Bundle item = intent.getExtras();
-//        resultSettingTime = (HashMap<String, Integer>)intent.getSerializableExtra("resultTimeMap");
-        resultSettingTime = mPrefDataHelper.selectMapInPref();
+        int startHour = resultTimeList.get(0).getStartHour();
+        int startMinute = resultTimeList.get(0).getStartMinute();
+        int endHour = resultTimeList.get(0).getEndHour();
+        int endMinute = resultTimeList.get(0).getEndMinute();
 
-
-        mHandler = new Handler();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                int startHour = resultSettingTime.get("startHour");
-                int startMinute = resultSettingTime.get("startMinute");
-                int endHour = resultSettingTime.get("endHour");
-                int endMinute = resultSettingTime.get("endMinute");
-                muteWhenCall(); // 전화 상태 감시
-                startMuteTimeRange(startHour,startMinute); // 시작 시간 무음설정
-                endMuteTimeRange(endHour,endMinute); // 끝나는 시간 무음해제
-                Log.d(TAG,"서비스 시작");
-                Log.d(TAG,"시작시간 : " + startHour + ":" + startMinute+" 끝 시간" + endHour + ":" + endMinute);
-
-            }
-        });
+        AlarmThread mAlarmThread = new AlarmThread(startHour,startMinute,endHour,endMinute);
+        mAlarmThread.start();
         //MuteAudio();
         return START_REDELIVER_INTENT;
+    }
+
+    class AlarmThread extends Thread {
+        int sh;
+        int sm;
+        int eh;
+        int em;
+        public AlarmThread(int startHour, int startMinute, int endHour, int endMinute) {
+            super();
+            sh = startHour;
+            sm = startMinute;
+            eh = endHour;
+            em = endMinute;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            startMuteTimeRange(sh,sm); // 시작 시간 무음설정
+            endMuteTimeRange(eh,em); // 끝나는 시간 무음해제
+            Log.d(TAG,"서비스 시작");
+            Log.d(TAG,"시작시간 : " + sh + ":" + sm+", 끝 시간" + eh + ":" + em);
+        }
     }
 
     /**
@@ -148,6 +164,7 @@ public class AudioService extends Service {
         } else {
             mAlarmManager.set(AlarmManager.RTC_WAKEUP, settingTime, pendingIntent); //계속 0초 ~ 3초 오차범위가 생김
         }
+        mAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP, settingTime, AlarmManager.INTERVAL_DAY, pendingIntent);
     }
     /**
      * 알람 매니져에 서비스 등록
@@ -195,7 +212,7 @@ public class AudioService extends Service {
      */
     public void muteWhenCall(){
         mTelephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_CALL_STATE);
+//        mTelephonyManager.listen(mListener,PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     /**
@@ -219,6 +236,7 @@ public class AudioService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        isServiceRunning = true;
         registerRestartAlarm();
     }
 

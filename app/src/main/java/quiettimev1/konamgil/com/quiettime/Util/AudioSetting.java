@@ -3,6 +3,7 @@ package quiettimev1.konamgil.com.quiettime.Util;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
+import android.util.Log;
 
 /**
  * Created by konamgil on 2017-06-08.
@@ -13,14 +14,21 @@ public class AudioSetting {
      * 오디오 무음처리
      */
     private Context mContext;
+    private AudioManager mAlramMAnager;
 
+    /**
+     * 생성자
+     * @param mContext
+     */
     public AudioSetting(Context mContext) {
         this.mContext = mContext;
+        mAlramMAnager= (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
     }
 
-
+    /**
+     * 현재 상태의 볼륨 기준에서 무음으로 바꿈
+     */
     public void MuteAudio(){
-        AudioManager mAlramMAnager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //마시멜로버전 이상
             mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0);
@@ -37,9 +45,10 @@ public class AudioSetting {
         }
     }
 
-
+    /**
+     * 무음 상태가 되기 직전 상태로 볼륨을 되돌림
+     */
     public void UnMuteAudio(){
-        AudioManager mAlramMAnager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //마시멜로버전 이상
             mAlramMAnager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_UNMUTE, 0);
@@ -58,5 +67,29 @@ public class AudioSetting {
             mAlramMAnager.setStreamMute(AudioManager.STREAM_RING, false);
             mAlramMAnager.setStreamMute(AudioManager.STREAM_SYSTEM, false);
         }
+    }
+
+    /**
+     * 벨소리 최대볼륨의 절반으로 만듭니다
+     */
+    public void setUpAudioVolume(){
+        int maxVoulume = mAlramMAnager.getStreamMaxVolume(AudioManager.STREAM_RING);
+
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_SYSTEM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_ALARM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+    }
+
+    /**
+     * 벨소리 볼륨을 0으로 만듭니다
+     */
+    public void setDownAudioVolume(){
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, 0, AudioManager.FLAG_SHOW_UI);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, AudioManager.FLAG_SHOW_UI);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_SHOW_UI);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_SHOW_UI);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_ALARM, 0, AudioManager.FLAG_SHOW_UI);
     }
 }

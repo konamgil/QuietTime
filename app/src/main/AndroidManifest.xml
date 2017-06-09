@@ -33,6 +33,7 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="Action.START.MuteTime"/>
                 <action android:name="Action.END.MuteTime"/>
+                <action android:name="android.intent.action.PHONE_STATE"/>
             </intent-filter>
         </receiver>
     </application>
