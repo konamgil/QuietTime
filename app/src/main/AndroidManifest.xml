@@ -34,6 +34,7 @@
                 <action android:name="Action.START.MuteTime"/>
                 <action android:name="Action.END.MuteTime"/>
                 <action android:name="android.intent.action.PHONE_STATE"/>
+                <action android:name="android.media.RINGER_MODE_CHANGED" />
             </intent-filter>
         </receiver>
     </application>

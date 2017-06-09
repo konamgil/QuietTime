@@ -73,13 +73,13 @@ public class AudioSetting {
      * 벨소리 최대볼륨의 절반으로 만듭니다
      */
     public void setUpAudioVolume(){
+        int maxVoulume = mAlramMAnager.getStreamMaxVolume(AudioManager.STREAM_RING);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_SYSTEM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_ALARM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
         mAlramMAnager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-//        int maxVoulume = mAlramMAnager.getStreamMaxVolume(AudioManager.STREAM_RING);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_SYSTEM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_ALARM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
     }
 
     /**
