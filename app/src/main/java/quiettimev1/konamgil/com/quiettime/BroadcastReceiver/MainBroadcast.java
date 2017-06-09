@@ -57,7 +57,6 @@ public class MainBroadcast extends BroadcastReceiver {
          * 시작 시간때 장비 무음으로 설정
          */
         if(intent.getAction().equals("Action.START.MuteTime")){
-//            audio.MuteAudio(); //무음
             audio.setDownAudioVolume();
             Toast.makeText(context,"무음",Toast.LENGTH_SHORT).show();
 
@@ -67,7 +66,6 @@ public class MainBroadcast extends BroadcastReceiver {
          * 끝 시간때 장비 다시 소리나도록 설정
          */
         if(intent.getAction().equals("Action.END.MuteTime")){
-//            audio.UnMuteAudio(); //무음 해제
             audio.setUpAudioVolume();
             Toast.makeText(context,"무음 해제",Toast.LENGTH_SHORT).show();
         }

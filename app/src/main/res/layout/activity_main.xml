@@ -136,4 +136,51 @@
     </LinearLayout>
 
 
+
+
+    <LinearLayout
+        android:id="@+id/testLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        >
+        <Button
+            android:id="@+id/btnTest"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#ffCCCC"
+            android:scaleType="centerCrop"
+            android:textSize="10sp"
+            android:onClick="test"
+            android:text="무음" />
+        <Button
+            android:id="@+id/btnTest2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#ffCCCC"
+            android:scaleType="centerCrop"
+            android:textSize="10sp"
+            android:onClick="test"
+            android:text="무음해제" />
+        <Button
+            android:id="@+id/btnTest3"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#ffCCCC"
+            android:scaleType="centerCrop"
+            android:textSize="10sp"
+            android:onClick="test"
+            android:text="선택전화수신" />
+        <Button
+            android:id="@+id/btnTest4"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#ffCCCC"
+            android:scaleType="centerCrop"
+            android:textSize="10sp"
+            android:onClick="test"
+            android:text="아는전화수신" />
+
+    </LinearLayout>
+
 </RelativeLayout>

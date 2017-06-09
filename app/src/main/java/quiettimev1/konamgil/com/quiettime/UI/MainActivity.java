@@ -42,6 +42,7 @@ import quiettimev1.konamgil.com.quiettime.PhoneNumber.ContactsInfoObject;
 import quiettimev1.konamgil.com.quiettime.PhoneNumber.TimeInfoObject;
 import quiettimev1.konamgil.com.quiettime.R;
 import quiettimev1.konamgil.com.quiettime.Service.AudioService;
+import quiettimev1.konamgil.com.quiettime.Util.AudioSetting;
 import quiettimev1.konamgil.com.quiettime.Util.GetTime;
 
 public class MainActivity extends AppCompatActivity {
@@ -86,11 +87,28 @@ public class MainActivity extends AppCompatActivity {
             checkPermission();//퍼미션 요청
         }
         mContext = this;
-        init(); // 위젯 초기화
-        initWidget();
-        allowMuteMode();
+        init();     // 컬렉션 및 스토어 초기화
+        initWidget(); // 위젯 초기화
+        allowMuteMode(); //방해금지 허용
     }
 
+    //test
+    public void test (View view){
+        AudioSetting a = new AudioSetting(mContext);
+        switch (view.getId()){
+            case R.id.btnTest:
+                a.setDownAudioVolume();
+                Toast.makeText(mContext,"무음",Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.btnTest2:
+                a.setUpAudioVolume();
+                break;
+            case R.id.btnTest3:
+                break;
+            case R.id.btnTest4:
+                break;
+        }
+    }
     /**
      * 방해금지 허용해야 볼륨조절 사용 가능
      */

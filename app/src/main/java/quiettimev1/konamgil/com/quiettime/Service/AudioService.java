@@ -128,8 +128,8 @@ public class AudioService extends Service {
      */
     public void startMuteTimeRange(int hour, int minute){
         //설정한 시간대는 무음이 되도록 intent 구성
-        Intent intent = new Intent("Action.START.MuteTime");
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),0,intent,0);
+        Intent start = new Intent("Action.START.MuteTime");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),0,start,0);
 
         GetTime getTime = new GetTime();
         startTime = getTime.getSelectTimeTypeLong(hour,minute); //예제
@@ -142,8 +142,8 @@ public class AudioService extends Service {
      */
     public void endMuteTimeRange(int hour, int minute){
         //설정한 시간대는 무음이 되도록 intent 구성
-        Intent intent = new Intent("Action.END.MuteTime");
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),0,intent,0);
+        Intent end = new Intent("Action.END.MuteTime");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),0,end,0);
 
         GetTime getTime = new GetTime();
         endTime = getTime.getSelectTimeTypeLong(hour,minute); //예제
@@ -157,13 +157,13 @@ public class AudioService extends Service {
      * @param settingTime
      */
     public void execAlarm(PendingIntent pendingIntent, long settingTime){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {                   //버전이 21이상(마시멜로 이상)
-            mAlarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(settingTime,pendingIntent),pendingIntent);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {       //버전이 19~20(키캣~ 롤리팝)
-            mAlarmManager.setExact(AlarmManager.RTC_WAKEUP, settingTime, pendingIntent);
-        } else {
-            mAlarmManager.set(AlarmManager.RTC_WAKEUP, settingTime, pendingIntent); //계속 0초 ~ 3초 오차범위가 생김
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {                   //버전이 21이상(마시멜로 이상)
+//            mAlarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(settingTime,pendingIntent),pendingIntent);
+//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {       //버전이 19~20(키캣~ 롤리팝)
+//            mAlarmManager.setExact(AlarmManager.RTC_WAKEUP, settingTime, pendingIntent);
+//        } else {
+//            mAlarmManager.set(AlarmManager.RTC_WAKEUP, settingTime, pendingIntent); //계속 0초 ~ 3초 오차범위가 생김
+//        }
         mAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP, settingTime, AlarmManager.INTERVAL_DAY, pendingIntent);
     }
     /**
