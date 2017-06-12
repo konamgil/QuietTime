@@ -13,6 +13,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -87,9 +88,7 @@ public class MainActivity extends AppCompatActivity {
             checkPermission();//퍼미션 요청
         }
         mContext = this;
-        init();     // 컬렉션 및 스토어 초기화
-        initWidget(); // 위젯 초기화
-        allowMuteMode(); //방해금지 허용
+
     }
 
     /**
@@ -308,5 +307,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == MY_PERMISSION_REQUEST){
+            init();     // 컬렉션 및 스토어 초기화
+            initWidget(); // 위젯 초기화
+            allowMuteMode(); //방해금지 허용
+            } else {
+            Toast.makeText(MainActivity.this, "권한 요청을 거부했습니다.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

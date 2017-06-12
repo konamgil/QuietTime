@@ -28,7 +28,6 @@ public class GetTime {
             // 만약 설정한 시간이 현재 시간보다 이전이면
             calSet.add(Calendar.DATE, 1);  // 설정 시간에 하루를 더한다.
         }
-        Calendar CalTime = calSet;
 
         return calSet.getTimeInMillis();
     }
