@@ -31,9 +31,8 @@ public class MainBroadcast extends BroadcastReceiver {
     private String telNum = "";
     private AudioManager am;
     private RingtoneManager mRingtoneManager;
-    Uri alertUri;
-    static Ringtone r;
-    MediaPlayer player;
+    private Uri alertUri;
+    private  Ringtone r;
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -44,9 +43,9 @@ public class MainBroadcast extends BroadcastReceiver {
         am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         alertUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-        r = RingtoneManager.getRingtone(context, alertUri);
 
-        player = new MediaPlayer();
+
+
 
         /**
          * 서비스 죽일때 알람으로 다시 서비스 등록
@@ -93,6 +92,7 @@ public class MainBroadcast extends BroadcastReceiver {
 
 
         if (intent.getAction().equals("android.intent.action.PHONE_STATE")) {
+            r = RingtoneManager.getRingtone(context, alertUri);
             final PrefDataHelper mPrefDataHelper = new PrefDataHelper(context);
             final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -140,21 +140,25 @@ public class MainBroadcast extends BroadcastReceiver {
             if (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
                 if (AudioService.isServiceRunning) {
 //                    am.setRingerMode(0x00000000); // no sound and no vibration
+                    r.stop();
+                    Log.d(TAG,"r 종료");
+                    mRingtoneManager.stopPreviousRingtone();
+                    audio.setDownAudioVolume();
+                    Log.d(TAG,"현재 재생상태 : " + r.isPlaying());
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
 //                            if (r.isPlaying()) {
                             try {
-                                r.stop();
-                                player.stop();
-                                player.release();
-                                Log.d(TAG,"r 종료");
-                                mRingtoneManager.stopPreviousRingtone();
+//                                r.stop();
+//                                Log.d(TAG,"r 종료");
+//                                mRingtoneManager.stopPreviousRingtone();
+//                                audio.setDownAudioVolume();
+//                                Log.d(TAG,"현재 재생상태 : " + r.isPlaying());
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
-                                audio.setDownAudioVolume();
-                                Log.d(TAG,"현재 재생상태 : " + r.isPlaying());
+
 //                            }
                         }
                     });

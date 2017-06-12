@@ -9,6 +9,8 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:layout_marginLeft="10dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="7dp"
         android:layout_weight="12">
         <TextView
             android:id="@+id/tvName"

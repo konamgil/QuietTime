@@ -81,12 +81,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkPermission();//퍼미션 요청
+        } else {
+            setContentView(R.layout.activity_main);
         }
+        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_main);
+
         mContext = this;
 
     }
@@ -312,11 +314,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == MY_PERMISSION_REQUEST){
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setContentView(R.layout.activity_main);
+            }
             init();     // 컬렉션 및 스토어 초기화
             initWidget(); // 위젯 초기화
             allowMuteMode(); //방해금지 허용
             } else {
-            Toast.makeText(MainActivity.this, "권한 요청을 거부했습니다.", Toast.LENGTH_SHORT).show();
+
         }
     }
 }
