@@ -4,19 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 import quiettimev1.konamgil.com.quiettime.DB_Helper.PrefDataHelper;
 import quiettimev1.konamgil.com.quiettime.Service.AudioService;
@@ -85,18 +82,19 @@ public class MainBroadcast extends BroadcastReceiver {
         if (intent.getAction().equals("Action.END.MuteTime")) {
             audio.setUpAudioVolume();
             AudioService.isServiceRunning = false;
-            r.stop();
+//            r.stop();
             Log.d(TAG, "무음 해제");
             Toast.makeText(context, "무음 해제", Toast.LENGTH_SHORT).show();
         }
 
 
         if (intent.getAction().equals("android.intent.action.PHONE_STATE")) {
-            r = RingtoneManager.getRingtone(context, alertUri);
+
             final PrefDataHelper mPrefDataHelper = new PrefDataHelper(context);
             final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
             final ArrayList<String> checkedNumberList = mPrefDataHelper.selectCheckedNumberList();
+            r = RingtoneManager.getRingtone(context, alertUri);
             if (tm.getCallState() == TelephonyManager.CALL_STATE_RINGING) {
                 Bundle bundle = intent.getExtras();
                 telNum = bundle.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
@@ -114,14 +112,12 @@ public class MainBroadcast extends BroadcastReceiver {
 //                                audio.setUpAudioVolume();
 //                                audio.setUpAudioVolume();
                                 if(AudioService.isFirstCall){
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            r.play();
-                                            AudioService.isFirstCall = false;
-                                            Log.d(TAG,"첫번째 전화입니다");
-                                        }
-                                    });
+
+                                    r.play();
+                                    Log.d(TAG, "현재 재생상태 전화옴옴 : " + r.isPlaying());
+                                   AudioService.isFirstCall = false;
+                                   Log.d(TAG, "첫번째 전화입니다");
+
                                 }
                                 if (AudioService.isServiceRunning) {
                                     am.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
@@ -130,6 +126,8 @@ public class MainBroadcast extends BroadcastReceiver {
                                     Toast.makeText(context, "걸려온 전화 : " + telNum + ", 체크된 번호 수신 : " + checkedNumberList.get(i), Toast.LENGTH_SHORT).show();
                                     return;
                                 }
+                                Intent intent = new Intent("Action.END.MuteTime");
+                                context.sendBroadcast(intent);
                             }
                         }
                     }

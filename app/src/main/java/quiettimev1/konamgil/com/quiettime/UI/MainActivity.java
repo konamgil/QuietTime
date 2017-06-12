@@ -322,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
             initWidget(); // 위젯 초기화
             allowMuteMode(); //방해금지 허용
             } else {
-
+                Toast.makeText(mContext,"권한이 허용되지 않았습니다",Toast.LENGTH_SHORT).show();
         }
     }
 }
