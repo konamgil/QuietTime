@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,14 +77,17 @@ public class ContactsInfoDatas {
                 String mime = cursor.getString(mimePos);
 
                 if (mime.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
-                   Loop1 :  for(int i = 0; i<mCheckedNumber.size(); i++){
-                        if(numNo.equals(mCheckedNumber.get(i))){
-                            isChecked = true;
-                            break Loop1;
-                        } else {
-                            isChecked = false;
-                        }
-                    }
+                   if(mCheckedNumber!=null) {
+                       Loop1:
+                       for (int i = 0; i < mCheckedNumber.size(); i++) {
+                           if (numNo.equals(mCheckedNumber.get(i))) {
+                               isChecked = true;
+                               break Loop1;
+                           } else {
+                               isChecked = false;
+                           }
+                       }
+                   }
                     tempContacts.put(count++, new ContactsInfoObject(name, numNo, isChecked));
                 }
             }

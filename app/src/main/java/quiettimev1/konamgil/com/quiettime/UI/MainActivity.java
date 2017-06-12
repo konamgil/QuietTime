@@ -92,23 +92,6 @@ public class MainActivity extends AppCompatActivity {
         allowMuteMode(); //방해금지 허용
     }
 
-    //test
-    public void test (View view){
-        AudioSetting a = new AudioSetting(mContext);
-        switch (view.getId()){
-            case R.id.btnTest:
-                a.setDownAudioVolume();
-                Toast.makeText(mContext,"무음",Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.btnTest2:
-                a.setUpAudioVolume();
-                break;
-            case R.id.btnTest3:
-                break;
-            case R.id.btnTest4:
-                break;
-        }
-    }
     /**
      * 방해금지 허용해야 볼륨조절 사용 가능
      */
@@ -311,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
                     Manifest.permission.MODIFY_PHONE_STATE,
                     Manifest.permission.READ_CONTACTS,
                     Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
                     }, MY_PERMISSION_REQUEST);
         } else {
             Toast.makeText(mContext,"권한이 허용된 상태입니다",Toast.LENGTH_SHORT).show();

@@ -3,6 +3,7 @@ package quiettimev1.konamgil.com.quiettime.Util;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 
 /**
@@ -15,7 +16,7 @@ public class AudioSetting {
      */
     private Context mContext;
     private AudioManager mAlramMAnager;
-
+    Handler mHandler = new Handler();
     /**
      * 생성자
      * @param mContext
@@ -73,13 +74,26 @@ public class AudioSetting {
      * 벨소리 최대볼륨의 절반으로 만듭니다
      */
     public void setUpAudioVolume(){
-        int maxVoulume = mAlramMAnager.getStreamMaxVolume(AudioManager.STREAM_RING);
-        mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-        mAlramMAnager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-        mAlramMAnager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-        mAlramMAnager.setStreamVolume(AudioManager.STREAM_SYSTEM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
-        mAlramMAnager.setStreamVolume(AudioManager.STREAM_ALARM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
         mAlramMAnager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+        mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, 7, AudioManager.FLAG_PLAY_SOUND);
+
+//        mHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                 mAlramMAnager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+//                mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, 7, AudioManager.FLAG_ALLOW_RINGER_MODES|AudioManager.FLAG_PLAY_SOUND);
+////                mAlramMAnager.setMode(AudioManager.MODE_IN_CALL);
+////        int maxVoulume = mAlramMAnager.getStreamMaxVolume(AudioManager.STREAM_RING);
+////                int maxVoulume = mAlramMAnager.getStreamMaxVolume(AudioManager.STREAM_RING);
+////                mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, maxVoulume/2, AudioManager.FLAG_SHOW_UI);
+////                mAlramMAnager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+////                mAlramMAnager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+////                mAlramMAnager.setStreamVolume(AudioManager.STREAM_SYSTEM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+////                mAlramMAnager.setStreamVolume(AudioManager.STREAM_ALARM, maxVoulume/2, AudioManager.FLAG_PLAY_SOUND);
+//                Log.d("AudioService-call","소리업");
+//            }
+//        });
+
     }
 
     /**
@@ -87,10 +101,6 @@ public class AudioSetting {
      */
     public void setDownAudioVolume(){
         mAlramMAnager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_RING, 0, AudioManager.FLAG_SHOW_UI);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, AudioManager.FLAG_SHOW_UI);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_SHOW_UI);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_SHOW_UI);
-//        mAlramMAnager.setStreamVolume(AudioManager.STREAM_ALARM, 0, AudioManager.FLAG_SHOW_UI);
+
     }
 }

@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.ParcelUuid;
 import android.os.SystemClock;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -49,7 +50,7 @@ public class AudioService extends Service {
     private AlarmManager mAlarmManager;
     private AudioSetting audio;
     public static boolean isServiceRunning = false;
-
+    public static boolean isFirstCall = true;
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -96,7 +97,7 @@ public class AudioService extends Service {
 
         AlarmThread mAlarmThread = new AlarmThread(startHour,startMinute,endHour,endMinute);
         mAlarmThread.start();
-        //MuteAudio();
+
         return START_REDELIVER_INTENT;
     }
 
@@ -118,8 +119,9 @@ public class AudioService extends Service {
             super.run();
             startMuteTimeRange(sh,sm); // 시작 시간 무음설정
             endMuteTimeRange(eh,em); // 끝나는 시간 무음해제
+            muteWhenCall();
             Log.d(TAG,"서비스 시작");
-            Log.d(TAG,"시작시간 : " + sh + ":" + sm+", 끝 시간" + eh + ":" + em);
+            Log.d(TAG,"시작시간 = " + sh + ":" + sm+", 끝 시간 = " + eh + ":" + em);
         }
     }
 
@@ -165,6 +167,7 @@ public class AudioService extends Service {
 //            mAlarmManager.set(AlarmManager.RTC_WAKEUP, settingTime, pendingIntent); //계속 0초 ~ 3초 오차범위가 생김
 //        }
         mAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP, settingTime, AlarmManager.INTERVAL_DAY, pendingIntent);
+        Log.d(TAG,"알람 설정");
     }
     /**
      * 알람 매니져에 서비스 등록
@@ -219,16 +222,28 @@ public class AudioService extends Service {
      * 전화 상태 감시 리스너
      */
     private PhoneStateListener mListener = new PhoneStateListener(){
+        Handler mHandler = new Handler();
         @Override
-        public void onCallStateChanged(int state, String incomingNumber) {
+        public void onCallStateChanged(int state, final String incomingNumber) {
             if(state == TelephonyManager.CALL_STATE_RINGING){
-                //MuteAudio();
-                //선택된 번호는 특정시간에도 벨소리가 울려야한다
-                //특정 시간에는 무음이 된다
-                if(incomingNumber.equals("01051374420")){
-                    audio.UnMuteAudio();
-                }
-                Toast.makeText(getApplicationContext(),incomingNumber + "전화왔어요",Toast.LENGTH_LONG).show();
+                Log.i(TAG,"Calling .... Ringing");
+                PrefDataHelper mPrefDataHelper = new PrefDataHelper(getApplicationContext());
+                final ArrayList<String> checkedNumberList = mPrefDataHelper.selectCheckedNumberList();
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(int i = 0; i<checkedNumberList.size(); i++){
+                            if(checkedNumberList.get(i).equals(incomingNumber)){
+                                audio.setUpAudioVolume();
+                                Log.d(TAG,"걸려온 전화 : " + incomingNumber+", 체크된 번호 수신 : "+checkedNumberList.get(i) );
+                                            Toast.makeText(getApplicationContext(),"걸려온 전화 : " + incomingNumber+", 체크된 번호 수신 : "+checkedNumberList.get(i) ,Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                        }
+                    }
+                });
+                Toast.makeText(getApplicationContext(),incomingNumber + "전화 수신중",Toast.LENGTH_SHORT).show();
+                return;
             }
         }
     };
@@ -236,7 +251,7 @@ public class AudioService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        isServiceRunning = true;
+        isServiceRunning = false;
         registerRestartAlarm();
     }
 
